@@ -1,0 +1,34 @@
+<html>
+<head>
+  <style>
+    /* you can style your program here */
+  </style>
+</head>
+<body>
+  <main>
+    <div id="outside"></div>
+    <div id="shadowHost"></div>
+  </main>
+  <script>
+    fetch('./elm.js')
+      .then(response => response.text())
+      .then(elmJS =>
+        {
+          const shadowRoot = document.querySelector('#shadowHost').attachShadow({mode: 'closed'});
+          shadowRoot.innerHTML = `<div id = 'outer-container'><div id = 'elm-will-replace'></div></div> `;
+
+          const patchedJS = elmJS.replace
+              ('var node = document.getElementById(id);'
+              ,'var node = appRoot.getRootNode().getElementById(id);');
+
+
+          const fakeElmScope = {};
+          new Function('appRoot', patchedJS).call(fakeElmScope, shadowRoot.getElementById('outer-container'));
+
+          var app = fakeElmScope.Elm.Main.init({ node: shadowRoot.getElementById('elm-will-replace') })
+          // you can use ports and stuff here
+        });
+  </script>
+</body>
+</html>
+
